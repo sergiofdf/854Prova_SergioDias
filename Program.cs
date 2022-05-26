@@ -155,7 +155,12 @@ static int[,] posicionarPecasIniciais(string jogadorAtual)
     while (!listaCompleta)
     {
         Console.WriteLine($"Definindo Posições do jogador: {jogadorAtual}.");
-        Console.WriteLine("Falta posicionar:");
+        Console.WriteLine("Chegou a hora de jogar! Lembre-se que você possui um total inicial de:");
+        Console.WriteLine("- 4 Submarinos (SB): Ocupa 2 quadrantes;");
+        Console.WriteLine("- 3 Destroyers (DS): Ocupa 3 quadrantes;");
+        Console.WriteLine("- 2 Navios-tanque (NT): Ocupa 4 quadrantes;");
+        Console.WriteLine("- 1 Porta-aviões (PS): Ocupa 5 quadrantes.\n");
+        Console.WriteLine("Ainda falta posicionar:");
         foreach (KeyValuePair<string, int> kv in qtNaviosFaltaPosiconar)
         {
             Console.Write($"[{kv.Key}: {kv.Value}] | ");
