@@ -14,6 +14,8 @@ Conceitos abordados:
 - Condicionais;
 - Enum;
 - Linq;
+- Regex;
+- Tuplas;
 
 <br>
 
