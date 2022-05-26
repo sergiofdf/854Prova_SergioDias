@@ -5,13 +5,14 @@ O objetivo do desafio é desenvolver o jogo de batalha naval em C# com .NET6, de
 <br>
 
 Conceitos abordados:
-- Criação e trabalho com Variáveis em C#;
-- Funções;
+- Criação e trabalho com Variáveis em C# no .NET6;
+- Funções (métodos);
 - Laços de repetição;
 - Listas;
 - Arrays;
-- Dicionário;
+- Dicionários;
 - Condicionais;
+- Enum;
 - Linq;
 
 <br>

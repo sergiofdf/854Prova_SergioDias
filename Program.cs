@@ -88,6 +88,7 @@ static string defineNomeJogador(int numeroJogador)
 
 static void posicionarPecasIniciais(int jogador)
 {
+    int[,] matrizComPosicoes = new int[10, 10];
 
     Dictionary<string, int> dimensaoNavios = new()
     {
@@ -132,106 +133,141 @@ static void posicionarPecasIniciais(int jogador)
         while (!posicaoValida)
         {
             Console.WriteLine("Qual a posição da embarcação?");
+            Console.WriteLine($"Para o navio ecolhido, a dimensão da posição deve ser {dimensaoNavios[tipoEmabarcacao]}.");
             string posicaoEmbarcacao = Console.ReadLine().Trim().ToUpper();
-            if (string.IsNullOrEmpty(posicaoEmbarcacao) || !isPosicaoValida(posicaoEmbarcacao, listaPecas))
+            if (posicaoEmbarcacao.Length < 4 || posicaoEmbarcacao.Length > 6)
             {
                 Console.WriteLine("Posição Inválida");
+                continue;
             }
-            else
+            List<List<int>> listasNumericasPosicao = converteParaListaNumerica(posicaoEmbarcacao);
+            if (string.IsNullOrEmpty(posicaoEmbarcacao) || !isPosicaoValida(listasNumericasPosicao, listaPecas, tipoEmabarcacao, dimensaoNavios))
             {
-                string[] novoItem = { tipoEmabarcacao, posicaoEmbarcacao };
-                listaPecas.Add(novoItem);
-                posicaoValida = true;
+                Console.WriteLine("Posição Inválida");
+                continue;
             }
+
+
+
+            //FALTA IMPLEMENTAR FUNCAO ABAIXO
+            if (!isPosicaoLivre(posicaoEmbarcacao, listaPecas))
+            {
+                Console.WriteLine("Posição já está ocupada!");
+                continue;
+            }
+
+
+
+            int[,] matrizPosicaoAtual = criarMatriz(listasNumericasPosicao);
+
+            matrizComPosicoes = Sum(matrizComPosicoes, matrizPosicaoAtual);
+
+            Console.Clear();
+            View(matrizComPosicoes);
+
+
+            string[] novoItem = { tipoEmabarcacao, posicaoEmbarcacao };
+            listaPecas.Add(novoItem);
+            posicaoValida = true;
+
         }
     }
 
 
 }
 
-static bool isPosicaoValida(string posicaoParaChecar, List<string[]> listaPeças)
+static List<List<int>> converteParaListaNumerica(string posicaoComLetras)
 {
-    char[] caracteresPosicao = posicaoParaChecar.ToCharArray();
+    List<int> listaLetrasConvertidas = new();
+    List<int> listaDigitosConvertidos = new();
+    char[] caracteresPosicao = posicaoComLetras.ToCharArray();
 
-    if (!Enum.IsDefined(typeof(posicoesLinhas), caracteresPosicao[0].ToString()))
+    for (int i = 0; i < caracteresPosicao.Length; i++)
     {
-        Console.WriteLine("Posição Inválida");
+        if (Char.IsDigit(caracteresPosicao[i]))
+        {
+            if (i < caracteresPosicao.Length - 1 && Char.IsDigit(caracteresPosicao[i + 1]))
+            {
+                int digito = Convert.ToInt32(string.Concat(caracteresPosicao[i], caracteresPosicao[i + 1]));
+                listaDigitosConvertidos.Add(digito);
+                i++;
+            }
+
+            else
+            {
+                int digito = Convert.ToInt32(string.Concat(caracteresPosicao[i]));
+                listaDigitosConvertidos.Add(digito);
+            }
+        }
+        if (Enum.IsDefined(typeof(posicoesLinhas), caracteresPosicao[i].ToString()))
+        {
+            int letraConvertida = (int)Enum.Parse(typeof(posicoesLinhas), caracteresPosicao[i].ToString());
+            listaLetrasConvertidas.Add(letraConvertida);
+        }
+    }
+
+    List<List<int>> listasConvertidas = new();
+    listasConvertidas.Add(listaLetrasConvertidas);
+    listasConvertidas.Add(listaDigitosConvertidos);
+    return listasConvertidas;
+
+}
+
+static bool isPosicaoValida(List<List<int>> listaNumericaPosicoes, List<string[]> listaPeças, string tipoEmabarcacao, Dictionary<string, int> dimensaoNavios)
+{
+    if (listaNumericaPosicoes[0].Any(n => n > 9) || listaNumericaPosicoes[1].Any(n => n > 10))
+    {
         return false;
     }
 
-    //A1B2
-    if (posicaoParaChecar.Length == 4)
+    int tamanhoPosicao = 0;
+
+    if (listaNumericaPosicoes[0][0] == listaNumericaPosicoes[0][1])
     {
-        if (!Char.IsDigit(caracteresPosicao[1]) || !Char.IsDigit(caracteresPosicao[3]))
-        {
-            Console.WriteLine("Posição Inválida");
-            return false;
-        }
-        if (!Enum.IsDefined(typeof(posicoesLinhas), caracteresPosicao[2].ToString()))
-        {
-            Console.WriteLine("Posição Inválida");
-            return false;
-        }
+        tamanhoPosicao = listaNumericaPosicoes[1][1] - listaNumericaPosicoes[1][0] + 1;
+    }
+    else
+    {
+        tamanhoPosicao = listaNumericaPosicoes[0][1] - listaNumericaPosicoes[0][0] + 1;
     }
 
-    //A10B2 ou A2B10
-    //01234    01234 
-    if (posicaoParaChecar.Length == 5)
+    if (tamanhoPosicao != dimensaoNavios[tipoEmabarcacao])
     {
-        if (Char.IsDigit(caracteresPosicao[2]))
+        Console.WriteLine("Dimensão não condiz com o tipo de embarcação escolhido.");
+        return false;
+    }
+
+    return true;
+}
+
+static int[,] criarMatriz(List<List<int>> listaNumericaPosicoes)
+{
+
+
+    int[,] matrizPosicao = new int[10, 10];
+    for (int i = 0; i < 10; i++)
+    {
+        if (i >= listaNumericaPosicoes[0][0] && i <= listaNumericaPosicoes[0][1])
         {
-            if (caracteresPosicao[2].ToString() != "0")
+            for (int j = 0; j < 10; j++)
             {
-                return false;
-            }
-            if (!Char.IsDigit(caracteresPosicao[1]) || !Char.IsDigit(caracteresPosicao[4]))
-            {
-                return false;
-            }
-            if (!Enum.IsDefined(typeof(posicoesLinhas), caracteresPosicao[3].ToString()))
-            {
-                return false;
+                if (j >= listaNumericaPosicoes[1][0] - 1 && j <= listaNumericaPosicoes[1][1] - 1)
+                    matrizPosicao[i, j] = 1;
             }
         }
-        if (Char.IsDigit(caracteresPosicao[3]))
+        else
         {
-            if (caracteresPosicao[4].ToString() != "0")
+            for (int j = 0; j < 10; j++)
             {
-                return false;
-            }
-            if (!Char.IsDigit(caracteresPosicao[1]))
-            {
-                return false;
-            }
-            if (!Enum.IsDefined(typeof(posicoesLinhas), caracteresPosicao[2].ToString()))
-            {
-                return false;
+                matrizPosicao[i, j] = 0;
             }
         }
 
     }
-
-    //A10B10
-    //012345
-    if (posicaoParaChecar.Length == 6)
-    {
-        if (!Char.IsDigit(caracteresPosicao[1]) || !Char.IsDigit(caracteresPosicao[2]) || !Char.IsDigit(caracteresPosicao[4]) || !Char.IsDigit(caracteresPosicao[5]))
-        {
-            Console.WriteLine("Posição Inválida");
-            return false;
-        }
-        if (!Enum.IsDefined(typeof(posicoesLinhas), caracteresPosicao[3].ToString()))
-        {
-            Console.WriteLine("Posição Inválida");
-            return false;
-        }
-        if (caracteresPosicao[1].ToString() != "1" || caracteresPosicao[2].ToString() != "0" || caracteresPosicao[4].ToString() != "1" || caracteresPosicao[5].ToString() != "0")
-        {
-            Console.WriteLine("Posição Inválida");
-            return false;
-        }
-    }
-
+    return matrizPosicao;
+}
+static bool isPosicaoLivre(string posicaoParaChecar, List<string[]> listaPeças)
+{
     return true;
 }
 
@@ -259,7 +295,46 @@ static void inverterJogador(int jogador)
         Console.BackgroundColor = player1Background;
         Console.Clear();
     }
-};
+}
+
+static int[,] Sum(int[,] a, int[,] b)
+{
+    int[,] result = new int[10, 10];
+    for (int i = 0; i < 10; i++)
+        for (int j = 0; j < 10; j++)
+            result[i, j] = a[i, j] + b[i, j];
+    return result;
+}
+
+static void View(int[,] a)
+{
+    for (int i = 0; i < 11; i++)
+    {
+        for (int j = 0; j < 11; j++)
+        {
+            if (i == 0 && j == 0)
+            {
+                Console.Write("   ");
+            }
+            else if (i == 0 && j > 0)
+            {
+                Console.Write("{0}  ", j);
+            }
+            else if (j == 0 && i > 0)
+            {
+                Console.Write("{0}  ", Enum.GetName(typeof(posicoesLinhas), i - 1));
+            }
+            else
+            {
+                Console.Write("{0}  ", a[i - 1, j - 1]);
+            }
+        }
+        Console.WriteLine();
+
+    }
+    Console.WriteLine("\n\n");
+
+}
 
 public enum posicoesLinhas { A, B, C, D, E, F, G, H, I, J }
 
