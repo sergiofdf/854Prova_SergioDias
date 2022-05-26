@@ -31,7 +31,6 @@ static void controleCentralJogo()
 {
     string jogador1;
     string jogador2;
-    int proximoJogador = 0;
     int modalidade = menuInicial();
 
     if (modalidade == 1)
@@ -81,8 +80,9 @@ static void controleCentralJogo()
                 fimDeJogo = true;
             }
         }
-        Console.WriteLine($"Parabéns {nomeJogador}, você é o vencedor!");
-        Console.WriteLine("Pressione qualquer tecla para encerrar...");
+        Console.WriteLine("FIM DE JOGO!");
+        Console.WriteLine($"PARABÉNS {nomeJogador.ToUpper()}, VOCÊ VENCEU!!");
+        Console.WriteLine("Pressione enter para encerrar o jogo...");
         Console.ReadLine();
     }
     else
@@ -124,8 +124,6 @@ static string defineNomeJogador(int numeroJogador)
 
 static int[,] posicionarPecasIniciais(string jogadorAtual)
 {
-
-
     int[,] matrizComPosicoes = new int[10, 10];
 
     Dictionary<string, int> dimensaoNavios = new()
@@ -152,18 +150,26 @@ static int[,] posicionarPecasIniciais(string jogadorAtual)
 
     //Lista de peças com arrays [tipo_peça, posição_peça]
     List<string[]> listaPecas = new();
+    Dictionary<string, int> qtNaviosFaltaPosiconar = qtNaviosInicial;
     bool listaCompleta = false;
     while (!listaCompleta)
     {
         Console.WriteLine($"Definindo Posições do jogador: {jogadorAtual}.");
+        Console.WriteLine("Falta posicionar:");
+        foreach (KeyValuePair<string, int> kv in qtNaviosFaltaPosiconar)
+        {
+            Console.Write($"[{kv.Key}: {kv.Value}] | ");
+        }
+        Console.WriteLine("\n");
         Console.WriteLine("Qual o tipo de embarcação?");
+
         string tipoEmabarcacao = Console.ReadLine().Trim().ToUpper();
         if (!qtNaviosInicial.ContainsKey(tipoEmabarcacao))
         {
             Console.WriteLine("Tipo de embarcação inválida. Digite uma das opções [SB, DS, NT, PS]");
             continue;
         }
-        if (listaPecas.Where(l => l[0] == tipoEmabarcacao).Count() >= qtNaviosInicial[tipoEmabarcacao])
+        if (qtNaviosFaltaPosiconar[tipoEmabarcacao] == 0)
         {
             Console.WriteLine($"Ja foram definidas todas as posições das embarcações do tipo {tipoEmabarcacao}.");
             continue;
@@ -202,6 +208,7 @@ static int[,] posicionarPecasIniciais(string jogadorAtual)
 
             string[] novoItem = { tipoEmabarcacao, posicaoEmbarcacao };
             listaPecas.Add(novoItem);
+            qtNaviosFaltaPosiconar[tipoEmabarcacao] -= 1;
             posicaoValida = true;
 
         }
@@ -483,7 +490,7 @@ static int[,] executarJogada(int jogadorAtual, string nomeJogador, int[,] pecasO
 
         pecasOponente = matrizRetorno;
         criaMatrizStrings(pecasOponente);
-        Console.WriteLine("Pressione qualquer tecla para continuar o jogo...");
+        Console.WriteLine("Pressione enter para continuar o jogo...");
         Console.ReadLine();
         posicaoDisparoValida = true;
     }
