@@ -282,6 +282,11 @@ static bool isPosicaoValida(string posicaoEmbarcacao, List<List<int>> listaNumer
         return false;
     }
 
+    if ((listaNumericaPosicoes[0][0] != listaNumericaPosicoes[0][1]) && (listaNumericaPosicoes[1][1] != listaNumericaPosicoes[1][0]))
+    {
+        Console.WriteLine("Posição deve ser na vertical ou horizontal.");
+        return false;
+    }
     return true;
 }
 
