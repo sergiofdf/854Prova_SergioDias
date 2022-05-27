@@ -26,6 +26,6 @@ Conceitos abordados:
 - Clonar o repositório em uma pasta local:
     `git clone https://github.com/sergiofdf/854Prova_SergioDias.git`
   
-- Abra a solução do projeto com o visual studio.
+- Abra a solução do projeto com o visual studio, arquivo `854Prova_SergioDias.sln`.
 
 - Execute o projeto com `CTRL + F5`
