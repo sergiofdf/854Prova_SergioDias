@@ -80,7 +80,7 @@ static void controleCentralJogo()
         {
             peçasOponente = jogadorAtual == 1 ? peçasJogador2 : peçasJogador1;
             nomeJogador = jogadorAtual == 1 ? jogador1 : jogador2;
-            peçasOponente = executarJogada(jogadorAtual, nomeJogador, peçasOponente);
+            peçasOponente = executarJogada(nomeJogador, peçasOponente);
             if (jogadorAtual == 1)
             {
                 peçasJogador2 = peçasOponente;
@@ -222,7 +222,7 @@ static int[,] posicionarPecasIniciais(string jogadorAtual)
         }
         if (qtNaviosFaltaPosiconar[tipoEmabarcacao] == 0)
         {
-            Console.WriteLine($"Ja foram definidas todas as posições das embarcações do tipo {tipoEmabarcacao}.");
+            Console.WriteLine($"Ja foram definidas todas as posições das embarcações do tipo {tipoEmabarcacao}.\n");
             continue;
         }
         bool posicaoValida = false;
@@ -481,7 +481,7 @@ static void ViewOponente(string[,] a)
 
 }
 
-static int[,] executarJogada(int jogadorAtual, string nomeJogador, int[,] pecasOponente)
+static int[,] executarJogada(string nomeJogador, int[,] pecasOponente)
 {
     Console.WriteLine($"Jogador atual: {nomeJogador}\n");
     Console.WriteLine("Mapa atual do seu oponente:");
@@ -550,14 +550,13 @@ static int[,] executarJogada(int jogadorAtual, string nomeJogador, int[,] pecasO
         Console.ReadLine();
         posicaoDisparoValida = true;
     }
-
     return pecasOponente;
 }
 
 static void criaMatrizStrings(int[,] pecasOponente)
 {
     string[,] matrizStrings = new string[pecasOponente.GetLength(0), pecasOponente.GetLength(1)];
-
+    int countAcertos = 0;
     for (int i = 0; i < pecasOponente.GetLength(0); i++)
     {
         for (int j = 0; j < pecasOponente.GetLength(1); j++)
@@ -573,9 +572,12 @@ static void criaMatrizStrings(int[,] pecasOponente)
             if (pecasOponente[i, j] == -10)
             {
                 matrizStrings[i, j] = "X";
+                countAcertos++;
             }
         }
     }
+
+    Console.WriteLine($"Placar: {countAcertos} / 30 ");
 
     ViewOponente(matrizStrings);
 }
