@@ -22,9 +22,30 @@ static void startJogo()
 
     Thread.Sleep(300);
     Console.WriteLine("Carregando...");
-    Thread.Sleep(2000);
+    Thread.Sleep(3000);
     Console.Clear();
     controleCentralJogo();
+}
+
+static void regrasDoJogo()
+{
+    Console.WriteLine("Sobre o Jogo - Batalha Naval\n");
+    Console.WriteLine("Batalha naval é um jogo de tabuleiro de dois jogadores, no qual os jogadores têm de adivinhar em que quadrados estão os navios do oponente.");
+    Console.WriteLine("Cada jogador possui seu próprio tabuleiro de dimensão 10x10 onde as linhas são representadas por letras (A-J) e as colunas são representadas por números (1-10).");
+    Console.WriteLine("Os jogadores devem posicionar suas embarcações dentro dos quadrantes correspondentes.");
+    Console.WriteLine("As embarcações devem ser posicionadas na vertical ou horizontal sempre formando uma reta e nunca em diagonal.");
+    Console.WriteLine("Cada jodagor pode disparar uma vez em cada turno e para efetuar o disparo ele deve informar a posição do quadrante por letra e número. Exemplo: E7.");
+    Console.WriteLine("Caso o disparo acerte uma embarcação aquele local é sinalizado.");
+    Console.WriteLine("Quando um navio receber todos os disparos ele afunda.");
+    Console.WriteLine("O jodo termina quando um dos dois jogadores afundar todos os navios do seu oponente.");
+    Console.WriteLine("Cada jogador possui as seguintes embarcações:");
+    Console.WriteLine("- 1 Porta-Aviões (5 quadrantes)");
+    Console.WriteLine("- 2 Navio-Tanque (4 quadrantes)");
+    Console.WriteLine("- 3 Destroyers (3 quadrantes)");
+    Console.WriteLine("- 4 Submarinos (2 quadrantes)\n\n");
+    Console.WriteLine("Pressione enter para voltar ao menu inicial");
+    Console.ReadLine();
+    startJogo();
 }
 
 static void controleCentralJogo()
@@ -85,6 +106,10 @@ static void controleCentralJogo()
         Console.WriteLine("Pressione enter para encerrar o jogo...");
         Console.ReadLine();
     }
+    else if (modalidade == 3)
+    {
+        regrasDoJogo();
+    }
     else
     {
         Console.WriteLine("Modalidade ainda não desenvolvida");
@@ -98,6 +123,7 @@ static int menuInicial()
     Console.WriteLine("Escolha a opção de jogo:");
     Console.WriteLine("1 - Multiplayer: jogo entre 2 jogadores");
     Console.WriteLine("2 - Singleplayer: jogar contra o computador");
+    Console.WriteLine("3 - Veja as Regras do jogo");
 
     bool numeroValido = false;
     int numeroEscolha = 0;
@@ -105,7 +131,7 @@ static int menuInicial()
     while (!numeroValido)
     {
         string escolhaDigitada = Console.ReadLine();
-        numeroValido = (int.TryParse(escolhaDigitada, out numeroEscolha) && numeroEscolha > 0 && numeroEscolha <= 2);
+        numeroValido = (int.TryParse(escolhaDigitada, out numeroEscolha) && numeroEscolha > 0 && numeroEscolha <= 3);
         if (!numeroValido)
         {
             Console.WriteLine("Digite uma opção entre 1 e 2.");
@@ -118,8 +144,22 @@ static int menuInicial()
 
 static string defineNomeJogador(int numeroJogador)
 {
-    Console.Write($"Digite o nome do jogador {numeroJogador}:\n");
-    return Console.ReadLine();
+    bool nomeValido = false;
+    string nomeJogador = "";
+
+    while (!nomeValido)
+    {
+        Console.Write($"Digite o nome do jogador {numeroJogador}:\n");
+        nomeJogador = Console.ReadLine();
+        nomeValido = true;
+        if (string.IsNullOrEmpty(nomeJogador))
+        {
+            nomeValido = false;
+            Console.Clear();
+            Console.WriteLine("O nome não pode ser vazio.");
+        }
+    }
+    return nomeJogador;
 }
 
 static int[,] posicionarPecasIniciais(string jogadorAtual)
@@ -152,26 +192,32 @@ static int[,] posicionarPecasIniciais(string jogadorAtual)
     List<string[]> listaPecas = new();
     Dictionary<string, int> qtNaviosFaltaPosiconar = qtNaviosInicial;
     bool listaCompleta = false;
+
+    Console.WriteLine("Chegou a hora de jogar! Lembre-se que você possui um total inicial de:");
+    Console.WriteLine("- 4 Submarinos (SB): Ocupa 2 quadrantes;");
+    Console.WriteLine("- 3 Destroyers (DS): Ocupa 3 quadrantes;");
+    Console.WriteLine("- 2 Navios-tanque (NT): Ocupa 4 quadrantes;");
+    Console.WriteLine("- 1 Porta-aviões (PS): Ocupa 5 quadrantes.\n");
+
+    View(matrizComPosicoes);
+
+
     while (!listaCompleta)
     {
         Console.WriteLine($"Definindo Posições do jogador: {jogadorAtual}.");
-        Console.WriteLine("Chegou a hora de jogar! Lembre-se que você possui um total inicial de:");
-        Console.WriteLine("- 4 Submarinos (SB): Ocupa 2 quadrantes;");
-        Console.WriteLine("- 3 Destroyers (DS): Ocupa 3 quadrantes;");
-        Console.WriteLine("- 2 Navios-tanque (NT): Ocupa 4 quadrantes;");
-        Console.WriteLine("- 1 Porta-aviões (PS): Ocupa 5 quadrantes.\n");
         Console.WriteLine("Ainda falta posicionar:");
+        Console.WriteLine("Embarcação   |   Quantos Faltam  | Quadrantes que ocupa");
         foreach (KeyValuePair<string, int> kv in qtNaviosFaltaPosiconar)
         {
-            Console.Write($"[{kv.Key}: {kv.Value}] | ");
+            Console.WriteLine($"{kv.Key}           |       {kv.Value}           |       {dimensaoNavios[kv.Key]}");
         }
-        Console.WriteLine("\n");
-        Console.WriteLine("Qual o tipo de embarcação?");
+        Console.WriteLine("\nQual o tipo de embarcação?");
 
         string tipoEmabarcacao = Console.ReadLine().Trim().ToUpper();
+        Console.WriteLine("");
         if (!qtNaviosInicial.ContainsKey(tipoEmabarcacao))
         {
-            Console.WriteLine("Tipo de embarcação inválida. Digite uma das opções [SB, DS, NT, PS]");
+            Console.WriteLine("Tipo de embarcação inválida. Digite uma das opções [SB, DS, NT, PS]\n");
             continue;
         }
         if (qtNaviosFaltaPosiconar[tipoEmabarcacao] == 0)
@@ -183,16 +229,15 @@ static int[,] posicionarPecasIniciais(string jogadorAtual)
         while (!posicaoValida)
         {
             Console.WriteLine("Qual a posição da embarcação?");
-            Console.WriteLine($"Para o navio ecolhido, a dimensão da posição deve ser {dimensaoNavios[tipoEmabarcacao]}.");
+            Console.WriteLine($"Para o navio escolhido, a dimensão da posição deve ser {dimensaoNavios[tipoEmabarcacao]}.");
             string posicaoEmbarcacao = Console.ReadLine().Trim().ToUpper();
+            Console.WriteLine("");
             List<List<int>> listasNumericasPosicao = converteParaListaNumerica(posicaoEmbarcacao);
             if (string.IsNullOrEmpty(posicaoEmbarcacao) || !isPosicaoValida(posicaoEmbarcacao, listasNumericasPosicao, tipoEmabarcacao, dimensaoNavios))
             {
-                Console.WriteLine("Posição Inválida");
+                Console.WriteLine("Posição Inválida\n");
                 continue;
             }
-
-
 
             int[,] matrizPosicaoAtual = criarMatriz(listasNumericasPosicao);
 
@@ -202,7 +247,7 @@ static int[,] posicionarPecasIniciais(string jogadorAtual)
 
             if (!isPosicaoLivre(matrizAuxiliar))
             {
-                Console.WriteLine("Posição já está ocupada!");
+                Console.WriteLine("Posição já está ocupada!\n");
                 continue;
             }
 
@@ -371,6 +416,7 @@ static int[,] Sum(int[,] a, int[,] b)
 
 static void View(int[,] a)
 {
+    Console.WriteLine("Mapa de posicionamento (0 = Livre, 1 = Ocupado)");
     for (int i = 0; i < (a.GetLength(0) + 1); i++)
     {
         for (int j = 0; j < (a.GetLength(1) + 1); j++)
@@ -395,7 +441,7 @@ static void View(int[,] a)
         Console.WriteLine();
 
     }
-    Console.WriteLine("\n\n");
+    Console.WriteLine("\n");
 
 }
 
