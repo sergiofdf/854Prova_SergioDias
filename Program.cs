@@ -106,14 +106,66 @@ static void controleCentralJogo()
         Console.WriteLine("Pressione enter para encerrar o jogo...");
         Console.ReadLine();
     }
+    else if (modalidade == 2)
+    {
+        // Entrada de Nome Jogador 1
+        Console.BackgroundColor = ConsoleColor.DarkBlue;
+        Console.Clear();
+        jogador1 = defineNomeJogador(1);
+
+        jogador2 = "player2Computador";
+
+        // Posicionamento peças iniciais
+        int[,] peçasJogador1 = posicionarPecasIniciais(jogador1);
+        inverterJogador(1);
+
+        int[,] peçasJogador2 = posicionarPecasIniciaisComputador(jogador2);
+        inverterJogador(2);
+
+        bool fimDeJogo = false;
+        int jogadorAtual = 1;
+        string nomeJogador = jogador1;
+        int[,] peçasOponente;
+
+
+        while (!fimDeJogo)
+        {
+            peçasOponente = jogadorAtual == 1 ? peçasJogador2 : peçasJogador1;
+            nomeJogador = jogadorAtual == 1 ? jogador1 : jogador2;
+            peçasOponente = executarJogada(nomeJogador, peçasOponente);
+            if (jogadorAtual == 1)
+            {
+                peçasJogador2 = peçasOponente;
+            }
+            if (jogadorAtual == 2)
+            {
+                peçasJogador1 = peçasOponente;
+            }
+
+            foreach (int posicao in peçasOponente)
+            {
+                if (posicao == 1)
+                {
+                    fimDeJogo = false;
+                    jogadorAtual = inverterJogador(jogadorAtual);
+                    break;
+                }
+                fimDeJogo = true;
+            }
+        }
+        Console.WriteLine("FIM DE JOGO!");
+        Console.WriteLine($"PARABÉNS {nomeJogador.ToUpper()}, VOCÊ VENCEU!!");
+        Console.WriteLine("Pressione enter para encerrar o jogo...");
+        Console.ReadLine();
+
+
+    }
     else if (modalidade == 3)
     {
         regrasDoJogo();
     }
     else
     {
-        Console.WriteLine("Modalidade ainda não desenvolvida");
-        Thread.Sleep(2000);
         startJogo();
     }
 }
@@ -134,7 +186,7 @@ static int menuInicial()
         numeroValido = (int.TryParse(escolhaDigitada, out numeroEscolha) && numeroEscolha > 0 && numeroEscolha <= 3);
         if (!numeroValido)
         {
-            Console.WriteLine("Digite uma opção entre 1 e 2.");
+            Console.WriteLine("Digite uma opção entre 1, 2 e 3.");
         }
     }
     Thread.Sleep(500);
@@ -293,9 +345,9 @@ static List<List<int>> converteParaListaNumerica(string posicaoComLetras)
                 listaDigitosConvertidos.Add(digito);
             }
         }
-        if (Enum.IsDefined(typeof(posicoesLinhas), caracteresPosicao[i].ToString()))
+        if (Enum.IsDefined(typeof(PosicoesLinhas), caracteresPosicao[i].ToString()))
         {
-            int letraConvertida = (int)Enum.Parse(typeof(posicoesLinhas), caracteresPosicao[i].ToString());
+            int letraConvertida = (int)Enum.Parse(typeof(PosicoesLinhas), caracteresPosicao[i].ToString());
             listaLetrasConvertidas.Add(letraConvertida);
         }
     }
@@ -431,7 +483,7 @@ static void View(int[,] a)
             }
             else if (j == 0 && i > 0)
             {
-                Console.Write("{0}  ", Enum.GetName(typeof(posicoesLinhas), i - 1));
+                Console.Write("{0}  ", Enum.GetName(typeof(PosicoesLinhas), i - 1));
             }
             else
             {
@@ -461,7 +513,7 @@ static void ViewOponente(string[,] a)
             }
             else if (j == 0 && i > 0)
             {
-                Console.Write("{0}  ", Enum.GetName(typeof(posicoesLinhas), i - 1));
+                Console.Write("{0}  ", Enum.GetName(typeof(PosicoesLinhas), i - 1));
             }
             else
             {
@@ -490,45 +542,64 @@ static int[,] executarJogada(string nomeJogador, int[,] pecasOponente)
 
     bool posicaoDisparoValida = false;
 
+
+
     while (!posicaoDisparoValida)
     {
-        Console.WriteLine("Escolha a posição para realizar o disparo");
-        string posicaoDisparo = Console.ReadLine().Trim().ToUpper();
 
-        if (string.IsNullOrWhiteSpace(posicaoDisparo))
+        List<int> listaNumericaDisparo = new();
+
+        bool isJogadorComputador = false;
+
+        if (nomeJogador == "player2Computador")
         {
-            Console.WriteLine("Posição de disparo inválida!");
-            continue;
-        }
+            Random rand = new();
+            int linha = rand.Next(0, 10);
+            int coluna = rand.Next(0, 10);
 
-        var pattern = @"^([A-J])\d[0]?$";
-        Regex regex = new(pattern);
-
-        posicaoDisparoValida = regex.Match(posicaoDisparo).Success;
-        if (!posicaoDisparoValida)
-        {
-            Console.WriteLine("Posição de disparo inválida!");
-            continue;
-        }
-
-        int digitoConvertido;
-        char[] caracteresPosicao = posicaoDisparo.ToCharArray();
-
-        int letraConvertida = (int)Enum.Parse(typeof(posicoesLinhas), caracteresPosicao[0].ToString());
-
-        if (posicaoDisparo.Length > 2)
-        {
-            digitoConvertido = Convert.ToInt32(string.Concat(caracteresPosicao[1], caracteresPosicao[2])) - 1;
+            listaNumericaDisparo.Add(linha);
+            listaNumericaDisparo.Add(coluna);
+            isJogadorComputador = true;
         }
         else
         {
-            digitoConvertido = Convert.ToInt32(caracteresPosicao[1].ToString()) - 1;
+            Console.WriteLine("Escolha a posição para realizar o disparo");
+            string posicaoDisparo = Console.ReadLine().Trim().ToUpper();
+
+            if (string.IsNullOrWhiteSpace(posicaoDisparo))
+            {
+                Console.WriteLine("Posição de disparo inválida!");
+                continue;
+            }
+
+            var pattern = @"^([A-J])\d[0]?$";
+            Regex regex = new(pattern);
+
+            posicaoDisparoValida = regex.Match(posicaoDisparo).Success;
+            if (!posicaoDisparoValida)
+            {
+                Console.WriteLine("Posição de disparo inválida!");
+                continue;
+            }
+
+            int digitoConvertido;
+            char[] caracteresPosicao = posicaoDisparo.ToCharArray();
+
+            int letraConvertida = (int)Enum.Parse(typeof(PosicoesLinhas), caracteresPosicao[0].ToString());
+
+            if (posicaoDisparo.Length > 2)
+            {
+                digitoConvertido = Convert.ToInt32(string.Concat(caracteresPosicao[1], caracteresPosicao[2])) - 1;
+            }
+            else
+            {
+                digitoConvertido = Convert.ToInt32(caracteresPosicao[1].ToString()) - 1;
+            }
+
+            listaNumericaDisparo.Add(letraConvertida);
+            listaNumericaDisparo.Add(digitoConvertido);
         }
 
-
-        List<int> listaNumericaDisparo = new();
-        listaNumericaDisparo.Add(letraConvertida);
-        listaNumericaDisparo.Add(digitoConvertido);
 
         int[,] matrizDisparoAtual = criarMatrizDisparo(listaNumericaDisparo);
 
@@ -536,7 +607,8 @@ static int[,] executarJogada(string nomeJogador, int[,] pecasOponente)
 
         matrizAuxiliar = Sum(matrizAuxiliar, matrizDisparoAtual);
 
-        (int[,] matrizRetorno, bool disparoValido) = trataDisparo(matrizAuxiliar);
+
+        (int[,] matrizRetorno, bool disparoValido) = trataDisparo(matrizAuxiliar, isJogadorComputador);
 
         if (!disparoValido)
         {
@@ -590,7 +662,7 @@ static int[,] criarMatrizDisparo(List<int> listaNumericaDisparo)
     return matrizDisparo;
 }
 
-static (int[,] matrizRetorno, bool disparoValido) trataDisparo(int[,] matrizResultadoDisparo)
+static (int[,] matrizRetorno, bool disparoValido) trataDisparo(int[,] matrizResultadoDisparo, bool isJogadorComputador)
 {
     int[,] matrizTratada = new int[matrizResultadoDisparo.GetLength(0), matrizResultadoDisparo.GetLength(1)];
     for (int i = 0; i < matrizResultadoDisparo.GetLength(0); i++)
@@ -613,7 +685,10 @@ static (int[,] matrizRetorno, bool disparoValido) trataDisparo(int[,] matrizResu
             else if (valorPosicao == -3 || valorPosicao == 2)
             {
                 (int[,] matrizRetorno, bool disparoValido) resultadoDisparoInvalido = (matrizResultadoDisparo, false);
-                Console.WriteLine("Posição de ataque inválida!");
+                if (isJogadorComputador)
+                {
+                    Console.WriteLine("Posição de ataque inválida!");
+                }
                 return resultadoDisparoInvalido;
             }
             else
@@ -625,6 +700,126 @@ static (int[,] matrizRetorno, bool disparoValido) trataDisparo(int[,] matrizResu
     (int[,] matrizRetorno, bool disparoValido) resultadoDisparoValido = (matrizTratada, true);
     return resultadoDisparoValido;
 }
-public enum posicoesLinhas { A, B, C, D, E, F, G, H, I, J }
+
+static int[,] posicionarPecasIniciaisComputador(string jogadorAtual)
+{
+
+    int[,] matrizComPosicoes = new int[10, 10];
+
+    Dictionary<string, int> dimensaoNavios = new()
+    {
+        { "SB", 2 },
+        { "DS", 3 },
+        { "NT", 4 },
+        { "PS", 5 }
+    };
+
+    Dictionary<string, int> qtNaviosInicial = new()
+    {
+        { "SB", 4 },
+        { "DS", 3 },
+        { "NT", 2 },
+        { "PS", 1 }
+    };
+
+
+    //Lista de peças com arrays [tipo_peça, posição_peça]
+    List<string[]> listaPecas = new();
+    bool listaCompleta = false;
+
+
+
+    foreach (KeyValuePair<string, int> navio in qtNaviosInicial)
+    {
+        int qtParaPosicionar = navio.Value;
+        while (qtParaPosicionar > 0)
+        {
+
+            Random rand = new();
+            //0=horizontal 1 = vertical
+            int posicionamento = rand.Next(0, 2);
+            int linhaOuColunaEscolhida = -1;
+
+            List<int> posicoesLivres = new();
+            while (posicoesLivres.Count == 0)
+            {
+                linhaOuColunaEscolhida = rand.Next(0, 10);
+                int dimensao = matrizComPosicoes.GetLength(0);
+                for (int j = 0; j < dimensao; j++)
+                {
+                    if (j + dimensaoNavios[navio.Key] <= dimensao)
+                    {
+                        bool addPosicao = true;
+                        for (int k = j; k < j + dimensaoNavios[navio.Key]; k++)
+                        {
+                            if (posicionamento == 0)
+                            {
+                                if (matrizComPosicoes[linhaOuColunaEscolhida, k] == 1)
+                                {
+                                    addPosicao = false;
+                                    break;
+                                }
+                            }
+                            if (posicionamento == 1)
+                            {
+                                if (matrizComPosicoes[k, linhaOuColunaEscolhida] == 1)
+                                {
+                                    addPosicao = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if (addPosicao)
+                        {
+                            posicoesLivres.Add(j);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                }
+
+            }
+            int posicaoLivreEscolhida = rand.Next(0, posicoesLivres.Count());
+
+            matrizComPosicoes = preencherMatriz(posicaoLivreEscolhida, dimensaoNavios[navio.Key], linhaOuColunaEscolhida, posicionamento, matrizComPosicoes);
+
+            qtParaPosicionar--;
+        }
+    }
+    int[,] pecasPosicionadas = matrizComPosicoes;
+    //View(pecasPosicionadas);
+    //int soma = 0;
+    //foreach (var pos in pecasPosicionadas)
+    //{
+    //    soma += pos;
+    //}
+    //Console.WriteLine(soma);
+
+    return pecasPosicionadas;
+
+}
+
+static int[,] preencherMatriz(int posicaoLivreEscolhida, int dimensaoNavio, int valorLinhaOuColuna, int posicionamento, int[,] matrizComPosicoes)
+{
+    if (posicionamento == 0)
+    {
+        for (int i = 0; i < dimensaoNavio; i++)
+        {
+            matrizComPosicoes[valorLinhaOuColuna, i] = 1;
+        }
+    }
+    if (posicionamento == 1)
+    {
+        for (int i = 0; i < dimensaoNavio; i++)
+        {
+            matrizComPosicoes[i, valorLinhaOuColuna] = 1;
+        }
+    }
+    return matrizComPosicoes;
+}
+
+public enum PosicoesLinhas { A, B, C, D, E, F, G, H, I, J }
 
 
