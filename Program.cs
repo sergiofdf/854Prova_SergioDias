@@ -361,7 +361,7 @@ static List<List<int>> converteParaListaNumerica(string posicaoComLetras)
 
 static bool isPosicaoValida(string posicaoEmbarcacao, List<List<int>> listaNumericaPosicoes, string tipoEmabarcacao, Dictionary<string, int> dimensaoNavios)
 {
-    var pattern = @"^([A-J])\d[0]?([A-J])\d[0]?$";
+    var pattern = @"^([A-J])[1-9][0]?([A-J])[1-9][0]?$";
     Regex regex = new(pattern);
     if (!regex.Match(posicaoEmbarcacao).Success)
     {
@@ -572,8 +572,14 @@ static int[,] executarJogada(string nomeJogador, int[,] pecasOponente)
                 continue;
             }
 
-            var pattern = @"^([A-J])\d[0]?$";
+            var pattern = @"^([A-J])[1-9][0]?$";
             Regex regex = new(pattern);
+
+            if (posicaoDisparo.Length >= 3 && posicaoDisparo.Substring(1) != "10")
+            {
+                Console.WriteLine("Posição de disparo inválida!");
+                continue;
+            }
 
             posicaoDisparoValida = regex.Match(posicaoDisparo).Success;
             if (!posicaoDisparoValida)
